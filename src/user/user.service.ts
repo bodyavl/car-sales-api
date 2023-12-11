@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, Repository, UpdateResult } from 'typeorm';
 import { User } from './entities';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import * as argon from 'argon2';
@@ -28,7 +28,7 @@ export class UserService {
     return savedUser;
   }
 
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto): Promise<User> {
     const hash = await argon.hash(dto.password);
 
     await this.userRepository.update(id, {
@@ -39,13 +39,10 @@ export class UserService {
 
     const user = await this.userRepository.findOneBy({ id });
 
-    delete user.hash;
-    delete user.refresh_tokens;
-
     return user;
   }
 
-  async delete(id: number) {
+  async delete(id: number): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) throw new NotFoundException('User not found');
@@ -55,22 +52,22 @@ export class UserService {
     return { message: 'User deleted' };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOneBy({ id });
-
-    delete user.hash;
-    delete user.refresh_tokens;
-
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  async findOneBy(options: FindOptionsWhere<User>) {
+  async findOneBy(options: FindOptionsWhere<User>): Promise<User> {
     const user = await this.userRepository.findOneBy(options);
 
     return user;
   }
 
-  async removeRefreshToken(id: number, refresh_token: string) {
+  async removeRefreshToken(
+    id: number,
+    refresh_token: string,
+  ): Promise<UpdateResult> {
     const updatedUser = await this.userRepository.update(
       { id },
       {
@@ -82,7 +79,10 @@ export class UserService {
     return updatedUser;
   }
 
-  async updateRefreshTokens(id: number, tokens: string[]) {
+  async updateRefreshTokens(
+    id: number,
+    tokens: string[],
+  ): Promise<UpdateResult> {
     const updatedUser = await this.userRepository.update(
       { id },
       { refresh_tokens: tokens },
@@ -91,7 +91,10 @@ export class UserService {
     return updatedUser;
   }
 
-  async addRefreshToken(id: number, refresh_token: string) {
+  async addRefreshToken(
+    id: number,
+    refresh_token: string,
+  ): Promise<UpdateResult> {
     const updatedUser = this.userRepository.update(
       { id },
       {
