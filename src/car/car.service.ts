@@ -6,12 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Car } from './entities/car.entity';
 import { Repository } from 'typeorm';
 import { Image } from 'src/image/entities/image.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class CarService {
   constructor(
     @InjectRepository(Car) private carRepository: Repository<Car>,
     private imageService: ImageService,
+    private userService: UserService,
   ) {}
 
   async create(
@@ -19,11 +21,16 @@ export class CarService {
     images: Array<Express.Multer.File>,
     userId: string,
   ): Promise<Car> {
+    const author = await this.userService.findOneBy({ id: userId });
+
+    if (!author) throw new NotFoundException('User not found');
+
     const car = await this.carRepository.save(
-      this.carRepository.create({ ...createCarDto }),
+      this.carRepository.create({ ...createCarDto, author }),
     );
 
     if (!images) return car;
+
     for (const image of images) {
       this.imageService.create(image, car);
     }
@@ -34,7 +41,9 @@ export class CarService {
   async findAll(): Promise<Car[]> {
     const cars = await this.carRepository
       .createQueryBuilder('c')
-      .select('c.*')
+      .select(
+        'c.id, u.name as author, c.carManufacturer, c.carModel, c.year, c.publishDate, c.description',
+      )
       .addSelect((subQuery) => {
         return subQuery
           .select('i.id', 'imageId')
@@ -42,10 +51,9 @@ export class CarService {
           .where('i.carId = c.id')
           .limit(1);
       }, 'imageId')
+      .leftJoin('c.author', 'u', 'u.id = c.authorId')
       .orderBy('c.id')
       .getRawMany();
-
-    console.log(cars);
 
     return cars;
   }
@@ -62,7 +70,7 @@ export class CarService {
     return car;
   }
 
-  update(id: number, updateCarDto: UpdateCarDto) {
+  update(id: number, updateCarDto: UpdateCarDto, userId: string) {
     return `This action updates a #${id} car`;
   }
 

@@ -32,7 +32,7 @@ export class Car {
   @OneToMany(() => Image, (image) => image.car)
   images: Image[];
 
-  @Column({ type: 'varchar', length: 240, nullable: true })
+  @Column({ nullable: true })
   description: string;
 
   @Column()

@@ -18,6 +18,7 @@ import { AccessTokenGuard } from 'src/auth/guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/decorators';
+import { ShortenFieldInEveryObjectInArrayInterceptor } from 'src/core/interceptors';
 
 @ApiTags('car')
 @Controller('car')
@@ -48,6 +49,9 @@ export class CarController {
     return this.carService.create(createCarDto, images, userId);
   }
 
+  @UseInterceptors(
+    new ShortenFieldInEveryObjectInArrayInterceptor('description'),
+  )
   @Get()
   findAll() {
     return this.carService.findAll();
@@ -58,9 +62,14 @@ export class CarController {
     return this.carService.findOne(id);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto) {
-    return this.carService.update(+id, updateCarDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateCarDto: UpdateCarDto,
+    @GetUser('id') userId: string,
+  ) {
+    return this.carService.update(+id, updateCarDto, userId);
   }
 
   @Delete(':id')

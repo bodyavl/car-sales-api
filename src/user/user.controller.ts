@@ -29,7 +29,7 @@ export class UserController {
   @ApiUnauthorizedResponse()
   @UseGuards(AccessTokenGuard)
   @Get()
-  async findMe(@GetUser('id') id: number) {
+  async findMe(@GetUser('id') id: string) {
     return this.userService.findOne(id);
   }
 
@@ -45,7 +45,7 @@ export class UserController {
   @ApiUnauthorizedResponse()
   @UseGuards(AccessTokenGuard)
   @Patch()
-  async update(@Body() user: UpdateUserDto, @GetUser('id') id: number) {
+  async update(@Body() user: UpdateUserDto, @GetUser('id') id: string) {
     return this.userService.update(id, user);
   }
 
@@ -53,7 +53,7 @@ export class UserController {
   @ApiNotFoundResponse()
   @UseGuards(RefreshTokenGuard)
   @Delete()
-  async delete(@GetUser('id') id: number) {
+  async delete(@GetUser('id') id: string) {
     return this.userService.delete(id);
   }
 }

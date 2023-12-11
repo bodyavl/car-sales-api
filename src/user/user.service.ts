@@ -28,7 +28,7 @@ export class UserService {
     return savedUser;
   }
 
-  async update(id: number, dto: UpdateUserDto): Promise<User> {
+  async update(id: string, dto: UpdateUserDto): Promise<User> {
     const hash = await argon.hash(dto.password);
 
     await this.userRepository.update(id, {
@@ -42,7 +42,7 @@ export class UserService {
     return user;
   }
 
-  async delete(id: number): Promise<{ message: string }> {
+  async delete(id: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) throw new NotFoundException('User not found');
@@ -52,7 +52,7 @@ export class UserService {
     return { message: 'User deleted' };
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -65,7 +65,7 @@ export class UserService {
   }
 
   async removeRefreshToken(
-    id: number,
+    id: string,
     refresh_token: string,
   ): Promise<UpdateResult> {
     const updatedUser = await this.userRepository.update(
@@ -80,7 +80,7 @@ export class UserService {
   }
 
   async updateRefreshTokens(
-    id: number,
+    id: string,
     tokens: string[],
   ): Promise<UpdateResult> {
     const updatedUser = await this.userRepository.update(
@@ -92,7 +92,7 @@ export class UserService {
   }
 
   async addRefreshToken(
-    id: number,
+    id: string,
     refresh_token: string,
   ): Promise<UpdateResult> {
     const updatedUser = this.userRepository.update(
