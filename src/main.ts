@@ -16,7 +16,11 @@ async function bootstrap() {
     }),
   );
 
-  const options = new DocumentBuilder().setTitle('Car sales').build();
+  const options = new DocumentBuilder()
+    .setTitle('Car sales')
+    .addBearerAuth({ type: 'http' }, 'access_token')
+    .addBearerAuth({ type: 'http' }, 'refresh_token')
+    .build();
 
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
