@@ -12,11 +12,13 @@ services:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
 
   app: 
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
+      target: build
     container_name: ${APP_NAME}
     ports:
       - "${APP_PORT}:${APP_PORT}"
+    command: sh -c "npx typeorm -d dist/db/data-source.js migration:run; npm run start:dev"
     depends_on:
       - db

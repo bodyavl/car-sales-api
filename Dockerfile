@@ -15,6 +15,6 @@ COPY --from=build /usr/src/app/dist ./dist
 RUN npm install -g pnpm
 RUN pnpm install
 COPY .env.example .env
-RUN rm package*.json pnpm-lock.yaml
+RUN rm pnpm-lock.yaml
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsString, Validate } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Validate } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotExist } from 'src/utils/validators/is-not-exists.validator';
 
 export class SignUpDto {
-  @IsNotEmpty()
+  @IsEmail()
   @ApiProperty({ example: 'test@gmail.com' })
   @Validate(IsNotExist, ['User'], {
     message: 'emailAlreadyExists',
