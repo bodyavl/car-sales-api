@@ -30,7 +30,7 @@ export class Car {
   publishDate: Date;
 
   @OneToMany(() => Image, (image) => image.car)
-  images: Image[];
+  images?: Image[] | null;
 
   @Column({ nullable: true })
   description: string;

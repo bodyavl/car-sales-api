@@ -53,7 +53,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Get('tokens')
   async updateTokens(
-    @GetUser('id') id: number,
+    @GetUser('id') id: string,
     @GetUser('refresh_token') refresh_token: string,
   ) {
     return this.authService.updateTokens(id, refresh_token);
@@ -65,7 +65,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Delete('signout')
   async signOut(
-    @GetUser('id') id: number,
+    @GetUser('id') id: string,
     @GetUser('refresh_token') refresh_token: string,
   ) {
     return this.authService.signOut(id, refresh_token);

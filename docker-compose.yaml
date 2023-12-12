@@ -1,9 +1,22 @@
 version: '3.8'
 services:
-  postgres:
-    image: postgres:latest
+  db:
+    image: postgres:alpine
     container_name: ${POSTGRES_DB}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: 'trust'
     env_file:
       - .env
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
+  app: 
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${APP_NAME}
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      - db

@@ -10,6 +10,7 @@ import {
 import { UserService } from './user.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
@@ -27,6 +28,7 @@ export class UserController {
 
   @ApiOkResponse({ type: User })
   @ApiUnauthorizedResponse()
+  @ApiBearerAuth('access_token')
   @UseGuards(AccessTokenGuard)
   @Get()
   async findMe(@GetUser('id') id: string) {
@@ -40,6 +42,7 @@ export class UserController {
     return this.userService.create(dto);
   }
 
+  @ApiBearerAuth('access_token')
   @ApiOkResponse({ type: User })
   @ApiBadRequestResponse()
   @ApiUnauthorizedResponse()
@@ -49,6 +52,7 @@ export class UserController {
     return this.userService.update(id, user);
   }
 
+  @ApiBearerAuth('refresh_token')
   @ApiOkResponse({ type: User })
   @ApiNotFoundResponse()
   @UseGuards(RefreshTokenGuard)

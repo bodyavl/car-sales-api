@@ -40,7 +40,7 @@ export class AuthService {
     return tokens;
   }
 
-  async signOut(id: number, refresh_token: string): Promise<void> {
+  async signOut(id: string, refresh_token: string): Promise<void> {
     const user = await this.userService.findOneBy({ id });
 
     if (!user.refresh_tokens.includes(refresh_token))
@@ -49,7 +49,7 @@ export class AuthService {
     await this.userService.removeRefreshToken(id, refresh_token);
   }
 
-  async signTokens(userId: number, email: string): Promise<JwtTokens> {
+  async signTokens(userId: string, email: string): Promise<JwtTokens> {
     const data = {
       sub: userId,
       email,
@@ -76,7 +76,7 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async updateTokens(id: number, refresh_token: string): Promise<JwtTokens> {
+  async updateTokens(id: string, refresh_token: string): Promise<JwtTokens> {
     const user = await this.userService.findOneBy({ id });
 
     if (!user || !user.refresh_tokens)
@@ -96,7 +96,7 @@ export class AuthService {
     return tokens;
   }
 
-  async updateRefreshToken(id: number, refresh_token: string) {
+  async updateRefreshToken(id: string, refresh_token: string) {
     this.userService.addRefreshToken(id, refresh_token);
   }
 }

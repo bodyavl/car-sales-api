@@ -42,7 +42,7 @@ export class CarService {
     const cars = await this.carRepository
       .createQueryBuilder('c')
       .select(
-        'c.id, u.name as author, c.carManufacturer, c.carModel, c.year, c.publishDate, c.description',
+        'c.id, c.authorId, c.carManufacturer, c.carModel, c.year, c.publishDate, c.description',
       )
       .addSelect((subQuery) => {
         return subQuery
@@ -51,7 +51,6 @@ export class CarService {
           .where('i.carId = c.id')
           .limit(1);
       }, 'imageId')
-      .leftJoin('c.author', 'u', 'u.id = c.authorId')
       .orderBy('c.id')
       .getRawMany();
 
@@ -63,18 +62,36 @@ export class CarService {
       .createQueryBuilder('c')
       .select(['c', 'i.id'])
       .leftJoin('c.images', 'i', 'i.carId = c.id')
+      .leftJoinAndSelect('c.author', 'user', 'user.id = c.authorId')
       .where('c.id = :id', { id })
       .getOne();
 
     if (!car) throw new NotFoundException('Car not found');
+
     return car;
   }
 
-  update(id: number, updateCarDto: UpdateCarDto, userId: string) {
-    return `This action updates a #${id} car`;
+  async update(id: string, updateCarDto: UpdateCarDto, userId: string) {
+    const car = await this.carRepository.findOneBy({
+      id,
+      author: { id: userId },
+    });
+
+    if (!car) throw new NotFoundException('Car not found');
+
+    return this.carRepository.save({ ...car, ...updateCarDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} car`;
+  async remove(id: string, userId: string) {
+    const car = await this.carRepository.findOneBy({
+      id,
+      author: { id: userId },
+    });
+
+    if (!car) throw new NotFoundException('Car not found');
+
+    await this.carRepository.delete(id);
+
+    return { message: 'Car deleted' };
   }
 }

@@ -13,34 +13,46 @@ import {
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { AccessTokenGuard } from 'src/auth/guard';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { AccessTokenGuard, OptionalAccessTokenGuard } from 'src/auth/guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/decorators';
-import { ShortenFieldInEveryObjectInArrayInterceptor } from 'src/core/interceptors';
+import {
+  CarResponseInterceptor,
+  ShortenFieldInEveryObjectInArrayInterceptor,
+} from 'src/core/interceptors';
+import { generateFileName } from 'src/utils/multer/generateFileName';
+import { Car } from './entities/car.entity';
 
 @ApiTags('car')
 @Controller('car')
 export class CarController {
   constructor(private readonly carService: CarService) {}
 
-  @Post()
+  @ApiConsumes('multipart/form-data')
+  @ApiCreatedResponse({ description: 'Car created successfully', type: Car })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBearerAuth('access_token')
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(
     FilesInterceptor('images', 20, {
       storage: diskStorage({
         destination: './uploads/',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          return cb(null, `${randomName}${file.originalname}`);
-        },
+        filename: generateFileName,
       }),
     }),
   )
+  @Post()
   create(
     @GetUser('id') userId: string,
     @Body() createCarDto: CreateCarDto,
@@ -49,6 +61,25 @@ export class CarController {
     return this.carService.create(createCarDto, images, userId);
   }
 
+  @ApiOkResponse({
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'stirng' },
+          authorId: { type: 'stirng' },
+          carManufacturer: { type: 'string' },
+          carModel: { type: 'string' },
+          year: { type: 'number' },
+          publishDate: { type: 'string' },
+          description: { type: 'string' },
+          imageId: { type: 'stirng' },
+        },
+      },
+    },
+    description: 'Cars found',
+  })
   @UseInterceptors(
     new ShortenFieldInEveryObjectInArrayInterceptor('description'),
   )
@@ -57,11 +88,40 @@ export class CarController {
     return this.carService.findAll();
   }
 
+  @ApiBearerAuth('access_token')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        authorId: { type: 'stirng' },
+        carManufacturer: { type: 'string' },
+        carModel: { type: 'string' },
+        year: { type: 'number' },
+        publishDate: { type: 'string' },
+        description: { type: 'string' },
+        VIN: { type: 'string' },
+        images: {
+          type: 'array',
+          items: { type: 'object', properties: { id: { type: 'string' } } },
+        },
+      },
+    },
+    description: 'Car found',
+  })
+  @ApiNotFoundResponse({ description: 'Car not found' })
+  @UseInterceptors(CarResponseInterceptor)
+  @UseGuards(OptionalAccessTokenGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.carService.findOne(id);
   }
 
+  @ApiBearerAuth('access_token')
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({ description: 'Car updated successfully' })
+  @ApiNotFoundResponse({ description: 'Car not found' })
   @UseGuards(AccessTokenGuard)
   @Patch(':id')
   update(
@@ -69,11 +129,16 @@ export class CarController {
     @Body() updateCarDto: UpdateCarDto,
     @GetUser('id') userId: string,
   ) {
-    return this.carService.update(+id, updateCarDto, userId);
+    return this.carService.update(id, updateCarDto, userId);
   }
 
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({ description: 'Car deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Car not found' })
+  @ApiBearerAuth('access_token')
+  @UseGuards(AccessTokenGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.carService.remove(+id);
+  remove(@Param('id') id: string, @GetUser('id') userId: string) {
+    return this.carService.remove(id, userId);
   }
 }

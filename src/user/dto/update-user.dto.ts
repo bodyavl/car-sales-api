@@ -1,12 +1,5 @@
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  Validate,
-  MinLength,
-} from 'class-validator';
+import { IsString, IsEmail, IsOptional, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { IsNotExist } from 'src/utils/validators/is-not-exists.validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {
@@ -20,9 +13,6 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEmail()
   @Transform(({ value }) => value.trim())
-  @Validate(IsNotExist, ['User'], {
-    message: 'emailAlreadyExists',
-  })
   email?: string;
 
   @ApiProperty({ example: '12345678' })
