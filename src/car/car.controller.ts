@@ -34,8 +34,11 @@ import {
 import { generateFileName } from 'src/utils/multer/generateFileName';
 import { Car } from './entities/car.entity';
 
-@ApiTags('car')
-@Controller('car')
+@ApiTags('Car')
+@Controller({
+  path: 'car',
+  version: '1',
+})
 export class CarController {
   constructor(private readonly carService: CarService) {}
 

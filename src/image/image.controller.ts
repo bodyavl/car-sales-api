@@ -3,8 +3,11 @@ import { ImageService } from './image.service';
 import { Response } from 'express';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('image')
-@Controller('image')
+@ApiTags('Image')
+@Controller({
+  path: 'image',
+  version: '1',
+})
 export class ImageController {
   constructor(private readonly imageService: ImageService) {}
 

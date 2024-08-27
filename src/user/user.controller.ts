@@ -21,8 +21,11 @@ import { AccessTokenGuard, RefreshTokenGuard } from 'src/auth/guard';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { User } from './user.types';
 
-@ApiTags('user')
-@Controller('user')
+@ApiTags('User')
+@Controller({
+  path: 'user',
+  version: '1',
+})
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
